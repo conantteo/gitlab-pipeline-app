@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitlab-dashboard-config
+  labels:
+    app: gitlab-dashboard
+data:
+  # Default configuration - can be overridden by environment variables
+  STREAMLIT_SERVER_PORT: "8501"
+  STREAMLIT_SERVER_ADDRESS: "0.0.0.0"
+  STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+  STREAMLIT_SERVER_ENABLE_CORS: "false"
+  
