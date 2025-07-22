@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab-dashboard
+  labels:
+    app: gitlab-dashboard
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gitlab-dashboard
+  template:
+    metadata:
+      labels:
+        app: gitlab-dashboard
+    spec:
+      containers:
+      - name: gitlab-dashboard
+        image: gitlab-dashboard:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8501
+          protocol: TCP
+        env:
+        - name: STREAMLIT_SERVER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-dashboard-config
+              key: STREAMLIT_SERVER_PORT
+        - name: STREAMLIT_SERVER_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-dashboard-config
+              key: STREAMLIT_SERVER_ADDRESS
+        - name: STREAMLIT_BROWSER_GATHER_USAGE_STATS
+          valueFrom:
+            configMapKeyRef:
+              name: gitlab-dashboard-config
+              key: STREAMLIT_BROWSER_GATHER_USAGE_STATS
+        - name: GITLAB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-dashboard-secrets
+              key: gitlab-token
+        - name: GITLAB_URL
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-dashboard-secrets
+              key: gitlab-url
+        - name: GROUP_ID
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-dashboard-secrets
+              key: group-id
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /_stcore/health
+            port: 8501
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /_stcore/health
+            port: 8501
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: false
+      securityContext:
+        fsGroup: 1000
+      restartPolicy: Always
