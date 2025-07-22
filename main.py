@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import time
 import json
+import os
 
 class GitLabDashboard:
     def __init__(self, gitlab_url, access_token):
@@ -97,6 +98,14 @@ def get_status_color(status):
     }
     return colors.get(status, '⚪')
 
+def get_env_config():
+    """Get configuration from environment variables"""
+    return {
+        'gitlab_url': os.getenv('GITLAB_URL', 'https://gitlab.com'),
+        'access_token': os.getenv('GITLAB_TOKEN', ''),
+        'group_id': os.getenv('GROUP_ID', '')
+    }
+
 def main():
     st.set_page_config(
         page_title="GitLab Pipeline Dashboard",
@@ -110,20 +119,24 @@ def main():
     # Sidebar configuration
     st.sidebar.header("Configuration")
     
+    env_config = get_env_config()
+    
     gitlab_url = st.sidebar.text_input(
         "GitLab URL",
-        value="https://gitlab.com",
+        value=env_config['gitlab_url'],
         help="Enter your GitLab instance URL"
     )
     
     access_token = st.sidebar.text_input(
         "Access Token",
+        value=env_config['access_token'],
         type="password",
         help="Enter your GitLab personal access token"
     )
     
     group_id = st.sidebar.text_input(
         "Group ID",
+        value=env_config['group_id'],
         help="Enter the GitLab group ID to monitor"
     )
     
